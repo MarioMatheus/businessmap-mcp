@@ -359,6 +359,41 @@ export const customFieldSchema = z.object({
   selected_card_ids_to_remove: z.array(z.number()).optional(),
 });
 
+export const getCardCustomFieldSchema = z.object({
+  card_id: z.number().describe('The ID of the card'),
+  field_id: z.number().describe('The ID of the custom field'),
+});
+
+export const setCardCustomFieldSchema = z.object({
+  card_id: z.number().describe('The ID of the card'),
+  field_id: z.number().describe('The ID of the custom field'),
+  value: z.string().nullable().optional().describe('The value for text, number, date, or link fields'),
+  selected_values_to_add_or_update: z
+    .array(customFieldValueSchema)
+    .optional()
+    .describe('Dropdown values to add or update'),
+  selected_value_ids_to_remove: z
+    .array(z.number())
+    .optional()
+    .describe('Dropdown value IDs to remove'),
+  other_value: z.string().nullable().optional().describe('Other dropdown value'),
+  contributor_ids_to_add: z.array(z.number()).optional().describe('Contributor IDs to add'),
+  contributor_ids_to_remove: z.array(z.number()).optional().describe('Contributor IDs to remove'),
+  files_to_add: z.array(fileAttachmentSchema).optional().describe('Files to add'),
+  files_to_update: z.array(fileAttachmentWithIdSchema).optional().describe('Files to update'),
+  file_ids_to_remove: z.array(z.number()).optional().describe('File IDs to remove'),
+  vote: z.union([z.literal(0), z.literal(1)]).nullable().optional().describe('Vote value'),
+  comment: z.string().nullable().optional().describe('Comment associated with a vote'),
+  selected_cards_to_add_or_update: z
+    .array(customFieldCardSchema)
+    .optional()
+    .describe('Cards to add or update in a card picker field'),
+  selected_card_ids_to_remove: z
+    .array(z.number())
+    .optional()
+    .describe('Selected card IDs to remove'),
+});
+
 export const subtaskSchema = z.object({
   description: z.string(),
   owner_user_id: z.number(),

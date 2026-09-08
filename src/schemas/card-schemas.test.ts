@@ -4,10 +4,12 @@ import {
   getCardDetailSchema,
   getCardLoggedTimeSchema,
   getCardSchema,
+  getCardCustomFieldSchema,
   listCardsSchema,
   moveCardSchema,
   searchCardsSchema,
   updateCardSubtaskSchema,
+  setCardCustomFieldSchema,
 } from './card-schemas.js';
 
 describe('listCardsSchema', () => {
@@ -86,6 +88,42 @@ describe('getCardSchema', () => {
 
   it('rejects non-number card_id', () => {
     expect(() => getCardSchema.parse({ card_id: 'xyz' })).toThrow();
+  });
+});
+
+describe('card custom field schemas', () => {
+  it('requires card_id and field_id for an individual field lookup', () => {
+    expect(() => getCardCustomFieldSchema.parse({ card_id: 1 })).toThrow();
+    expect(getCardCustomFieldSchema.parse({ card_id: 1, field_id: 2 })).toEqual({
+      card_id: 1,
+      field_id: 2,
+    });
+  });
+
+  it('accepts the complete custom field update payload', () => {
+    expect(
+      setCardCustomFieldSchema.parse({
+        card_id: 1,
+        field_id: 2,
+        value: null,
+        selected_values_to_add_or_update: [{ value_id: 3, position: 0 }],
+        selected_value_ids_to_remove: [4],
+        other_value: 'Other',
+        contributor_ids_to_add: [5],
+        contributor_ids_to_remove: [6],
+        files_to_add: [{ file_name: 'a.txt', link: 'https://example.com/a', position: 0 }],
+        files_to_update: [{ id: 7, file_name: 'b.txt', link: 'https://example.com/b', position: 1 }],
+        file_ids_to_remove: [8],
+        vote: 1,
+        comment: null,
+        selected_cards_to_add_or_update: [{ selected_card_id: 9, position: 0 }],
+        selected_card_ids_to_remove: [10],
+      })
+    ).toMatchObject({ card_id: 1, field_id: 2, value: null, vote: 1 });
+  });
+
+  it('rejects votes other than zero or one', () => {
+    expect(() => setCardCustomFieldSchema.parse({ card_id: 1, field_id: 2, vote: 2 })).toThrow();
   });
 });
 

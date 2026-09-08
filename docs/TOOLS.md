@@ -7,7 +7,7 @@ Complete reference for all tools, resources, and prompts provided by the Busines
 | Category                    | Count |
 | --------------------------- | :---: |
 | Default tools (`essential`) |  27   |
-| Full-profile tools          |  93   |
+| Full-profile tools          |  97   |
 | Resources                   |   6   |
 | Prompts                     |   4   |
 
@@ -67,7 +67,7 @@ for publishing the design and its evaluation results.
 
 ---
 
-### Card Management (44 tools)
+### Card Management (46 tools)
 
 #### Basic Operations
 
@@ -81,6 +81,7 @@ for publishing the design and its evaluation results.
 | `create_card`    | Create a new card in a board                                         |       ❌       |
 | `move_card`      | Move a card to a different column or lane                            |       ❌       |
 | `update_card`    | Update card properties                                               |       ❌       |
+| `set_card_custom_field` | Add or update one custom field value, including dropdowns, contributors, files, votes, and card picker values |       ❌       |
 | `set_card_size`  | Set the size/points of a specific card                               |       ❌       |
 | `delete_card`    | Permanently delete a card (irreversible)                             |     ❌ ⚠️      |
 
@@ -107,6 +108,7 @@ only for legacy array compatibility.
 | :------------------ | :------------------------------------- | :------------: |
 | `get_card_comments` | Get all comments for a specific card   |       ✅       |
 | `get_card_comment`  | Get details of a specific comment      |       ✅       |
+| `get_card_custom_field` | Get one custom field value from a specific card |       ✅       |
 | `create_comment`    | Add a new comment to a card            |       ❌       |
 | `update_comment`    | Update the text of an existing comment |       ❌       |
 | `delete_comment`    | Delete a comment from a card           |     ❌ ⚠️      |
@@ -187,11 +189,13 @@ only for legacy array compatibility.
 
 ---
 
-### Custom Field Management (1 tool)
+### Custom Field Management (3 tools)
 
-| Tool               | Description                                  | Read-Only Safe |
-| :----------------- | :------------------------------------------- | :------------: |
-| `get_custom_field` | Get details of a specific custom field by ID |       ✅       |
+| Tool                              | Description                                                                     | Read-Only Safe |
+| :-------------------------------- | :------------------------------------------------------------------------------ | :------------: |
+| `list_custom_fields`              | List field definitions; filter by ID, exact name, type, status, or expansions |       ✅       |
+| `get_custom_field`                | Get details of a specific custom field by ID                                    |       ✅       |
+| `get_custom_field_allowed_values` | Get allowed values for a dropdown custom field                                  |       ✅       |
 
 ---
 
