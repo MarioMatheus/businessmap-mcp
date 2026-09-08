@@ -13,7 +13,7 @@ Model Context Protocol (MCP) server for BusinessMap/Kanbanize. It gives AI clien
 
 ## What You Get
 
-- 27 agent-oriented MCP tools by default, with a 93-tool full profile for advanced operations
+- 27 agent-oriented MCP tools by default, with a 97-tool full profile for advanced operations
 - 6 MCP resources for direct workspace, board, and paginated card reads
 - 4 guided prompts for board analysis, reporting, card creation, and workspace summaries
 - Optional read-only mode for safer exploration

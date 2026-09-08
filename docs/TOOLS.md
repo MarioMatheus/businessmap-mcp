@@ -7,7 +7,7 @@ Complete reference for all tools, resources, and prompts provided by the Busines
 | Category                    | Count |
 | --------------------------- | :---: |
 | Default tools (`essential`) |  27   |
-| Full-profile tools          |  93   |
+| Full-profile tools          |  97   |
 | Resources                   |   6   |
 | Prompts                     |   4   |
 
@@ -67,7 +67,7 @@ for publishing the design and its evaluation results.
 
 ---
 
-### Card Management (44 tools)
+### Card Management (48 tools)
 
 #### Basic Operations
 
@@ -155,6 +155,15 @@ only for legacy array compatibility.
 | `get_card_child_graph`  | Get the hierarchical graph of a card's children (children of children too) |       ✅       |
 | `add_card_parent`       | Make a card a parent of a given card                                       |       ❌       |
 | `remove_card_parent`    | Remove the link between a child card and a parent card                     |       ❌       |
+
+#### Co-Owners
+
+| Tool                  | Description                                               | Read-Only Safe |
+| :-------------------- | :-------------------------------------------------------- | :------------: |
+| `get_card_co_owners` | Get all co-owners for a specific card                    |       ✅       |
+| `check_card_co_owner` | Check whether a user is a co-owner of a specific card    |       ✅       |
+| `add_card_co_owner`  | Add a user as a co-owner of a specific card              |       ❌       |
+| `remove_card_co_owner` | Remove a user as a co-owner of a specific card          |     ❌ ⚠️      |
 
 #### Blocking
 
