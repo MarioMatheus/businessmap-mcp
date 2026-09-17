@@ -409,8 +409,8 @@ export class CardToolHandler implements BaseToolHandler {
       annotations: READ_ONLY,
       errorContext: 'checking card co-owner',
       handler: async ({ card_id, user_id }) => {
-        await client.cards.checkCardCoOwner(card_id, user_id);
-        return { card_id, user_id, is_co_owner: true };
+        const is_co_owner = await client.cards.checkCardCoOwner(card_id, user_id);
+        return { card_id, user_id, is_co_owner };
       },
     });
 

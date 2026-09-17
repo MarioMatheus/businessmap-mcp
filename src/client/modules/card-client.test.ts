@@ -1,4 +1,5 @@
 import type { AxiosInstance } from 'axios';
+import { BusinessMapApiError } from '../businessmap-error.js';
 import type { Card } from '../../types/index.js';
 import { CardClient } from './card-client.js';
 
@@ -113,6 +114,15 @@ describe('CardClient co-owner operations', () => {
 
     await expect(client.checkCardCoOwner(42, 7)).resolves.toBe(true);
     expect(get).toHaveBeenCalledWith('/cards/42/coOwners/7');
+  });
+
+  it('returns false when a user is not a card co-owner', async () => {
+    const get = jest
+      .fn()
+      .mockRejectedValue(new BusinessMapApiError('BusinessMap API Error (404): Not found', { status: 404 }));
+    const client = createClient(get);
+
+    await expect(client.checkCardCoOwner(42, 7)).resolves.toBe(false);
   });
 
   it('adds and removes a card co-owner', async () => {

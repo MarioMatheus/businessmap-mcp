@@ -175,6 +175,23 @@ describe('CardToolHandler co-owner tools', () => {
     });
   });
 
+  it('returns false when the checked user is not a co-owner', async () => {
+    config.businessMap.toolProfile = 'full';
+    const checkCardCoOwner = jest.fn().mockResolvedValue(false);
+    const client = { cards: { checkCardCoOwner } } as unknown as BusinessMapClient;
+    const registerTool = jest.fn();
+
+    new CardToolHandler().registerTools({ registerTool } as unknown as McpServer, client, true);
+    const registration = registerTool.mock.calls.find(([name]) => name === 'check_card_co_owner');
+    const response = await registration?.[2]({ card_id: 42, user_id: 7 });
+
+    expect(JSON.parse(response.content[0].text)).toEqual({
+      card_id: 42,
+      user_id: 7,
+      is_co_owner: false,
+    });
+  });
+
   it('registers co-owner mutations only when writes are enabled', async () => {
     config.businessMap.toolProfile = 'full';
     const addCardCoOwner = jest.fn().mockResolvedValue(undefined);

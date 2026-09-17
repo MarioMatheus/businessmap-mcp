@@ -46,6 +46,7 @@ import {
   UpdateCommentParams,
   UpdateSubtaskParams,
 } from '../../types/index.js';
+import { BusinessMapApiError } from '../businessmap-error.js';
 import { BaseClientModuleImpl } from './base-client.js';
 
 export interface CardFilters {
@@ -456,9 +457,16 @@ export class CardClient extends BaseClientModuleImpl {
   /**
    * Check whether a user is a co-owner of a specific card
    */
-  async checkCardCoOwner(cardId: number, userId: number): Promise<true> {
-    await this.http.get(`/cards/${cardId}/coOwners/${userId}`);
-    return true;
+  async checkCardCoOwner(cardId: number, userId: number): Promise<boolean> {
+    try {
+      await this.http.get(`/cards/${cardId}/coOwners/${userId}`);
+      return true;
+    } catch (error) {
+      if (error instanceof BusinessMapApiError && error.status === 404) {
+        return false;
+      }
+      throw error;
+    }
   }
 
   /**
