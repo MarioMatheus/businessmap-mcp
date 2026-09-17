@@ -7,6 +7,8 @@ import {
   CardCustomField,
   CardCustomFieldDetails,
   CardCustomFieldsResponse,
+  CardCoOwner,
+  CardCoOwnersResponse,
   CardHistoryItem,
   CardHistoryResponse,
   CardRevisionItem,
@@ -46,6 +48,7 @@ import {
   UpdateSubtaskParams,
   SetCardCustomFieldParams,
 } from '../../types/index.js';
+import { BusinessMapApiError } from '../businessmap-error.js';
 import { BaseClientModuleImpl } from './base-client.js';
 
 export interface CardFilters {
@@ -469,6 +472,45 @@ export class CardClient extends BaseClientModuleImpl {
   async removeCardParent(cardId: number, parentCardId: number): Promise<void> {
     this.checkReadOnlyMode('remove card parent');
     await this.http.delete(`/cards/${cardId}/parents/${parentCardId}`);
+  }
+
+  /**
+   * Get all co-owners for a specific card
+   */
+  async getCardCoOwners(cardId: number): Promise<CardCoOwner[]> {
+    const response = await this.http.get<CardCoOwnersResponse>(`/cards/${cardId}/coOwners`);
+    return response.data.data;
+  }
+
+  /**
+   * Check whether a user is a co-owner of a specific card
+   */
+  async checkCardCoOwner(cardId: number, userId: number): Promise<boolean> {
+    try {
+      await this.http.get(`/cards/${cardId}/coOwners/${userId}`);
+      return true;
+    } catch (error) {
+      if (error instanceof BusinessMapApiError && error.status === 404) {
+        return false;
+      }
+      throw error;
+    }
+  }
+
+  /**
+   * Add a user as a co-owner of a specific card
+   */
+  async addCardCoOwner(cardId: number, userId: number): Promise<void> {
+    this.checkReadOnlyMode('add card co-owner');
+    await this.http.put(`/cards/${cardId}/coOwners/${userId}`);
+  }
+
+  /**
+   * Remove a user as a co-owner of a specific card
+   */
+  async removeCardCoOwner(cardId: number, userId: number): Promise<void> {
+    this.checkReadOnlyMode('remove card co-owner');
+    await this.http.delete(`/cards/${cardId}/coOwners/${userId}`);
   }
 
   /**

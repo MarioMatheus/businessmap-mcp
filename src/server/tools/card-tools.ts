@@ -3,6 +3,7 @@ import { BusinessMapClient } from '../../client/businessmap-client.js';
 import { Card, CardPage } from '../../types/index.js';
 import {
   addCardParentSchema,
+  addCardCoOwnerSchema,
   addPredecessorSchema,
   addStickerToCardSchema,
   addTagToCardSchema,
@@ -20,7 +21,9 @@ import {
   getCardChildGraphSchema,
   getCardChildrenSchema,
   getCardCommentSchema,
-  getCardCustomFieldSchema,
+   getCardCustomFieldSchema,
+   getCardCoOwnerSchema,
+   getCardCoOwnersSchema,
   getCardDetailSchema,
   getCardFlowHistorySchema,
   getCardHistorySchema,
@@ -38,6 +41,7 @@ import {
   listCardsSchema,
   moveCardSchema,
   removeCardParentSchema,
+  removeCardCoOwnerSchema,
   removePredecessorSchema,
   removeStickerFromCardSchema,
   removeTagFromCardSchema,
@@ -397,6 +401,32 @@ export class CardToolHandler implements BaseToolHandler {
     });
 
     registerTool(server, {
+      name: 'get_card_co_owners',
+      title: 'Get Card Co-Owners',
+      description: 'Get all co-owners for a specific card',
+      schema: getCardCoOwnersSchema,
+      annotations: READ_ONLY,
+      errorContext: 'getting card co-owners',
+      handler: async ({ card_id }) => {
+        const coOwners = await client.cards.getCardCoOwners(card_id);
+        return { coOwners, count: coOwners.length };
+      },
+    });
+
+    registerTool(server, {
+      name: 'check_card_co_owner',
+      title: 'Check Card Co-Owner',
+      description: 'Check whether a user is a co-owner of a specific card',
+      schema: getCardCoOwnerSchema,
+      annotations: READ_ONLY,
+      errorContext: 'checking card co-owner',
+      handler: async ({ card_id, user_id }) => {
+        const is_co_owner = await client.cards.checkCardCoOwner(card_id, user_id);
+        return { card_id, user_id, is_co_owner };
+      },
+    });
+
+    registerTool(server, {
       name: 'get_card_parent_graph',
       title: 'Get Card Parent Graph',
       description: 'Get a list of parent cards including their parent cards too',
@@ -605,6 +635,32 @@ export class CardToolHandler implements BaseToolHandler {
   }
 
   private registerRelationshipWriteTools(server: McpServer, client: BusinessMapClient): void {
+    registerTool(server, {
+      name: 'add_card_co_owner',
+      title: 'Add Card Co-Owner',
+      description: 'Add a user as a co-owner of a specific card',
+      schema: addCardCoOwnerSchema,
+      annotations: WRITE_IDEMPOTENT,
+      errorContext: 'adding card co-owner',
+      handler: async ({ card_id, user_id }) => {
+        await client.cards.addCardCoOwner(card_id, user_id);
+        return { card_id, user_id };
+      },
+    });
+
+    registerTool(server, {
+      name: 'remove_card_co_owner',
+      title: 'Remove Card Co-Owner',
+      description: 'Remove a user as a co-owner of a specific card',
+      schema: removeCardCoOwnerSchema,
+      annotations: DESTRUCTIVE_IDEMPOTENT,
+      errorContext: 'removing card co-owner',
+      handler: async ({ card_id, user_id }) => {
+        await client.cards.removeCardCoOwner(card_id, user_id);
+        return { card_id, user_id };
+      },
+    });
+
     registerTool(server, {
       name: 'add_card_parent',
       title: 'Add Card Parent',

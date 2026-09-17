@@ -2,14 +2,18 @@ import {
   createCardSchema,
   deleteCardSubtaskSchema,
   getCardDetailSchema,
+  getCardCoOwnerSchema,
+  getCardCoOwnersSchema,
   getCardLoggedTimeSchema,
   getCardSchema,
   getCardCustomFieldSchema,
   listCardsSchema,
   moveCardSchema,
+  removeCardCoOwnerSchema,
   searchCardsSchema,
   updateCardSubtaskSchema,
-  setCardCustomFieldSchema,
+   setCardCustomFieldSchema,
+   addCardCoOwnerSchema,
 } from './card-schemas.js';
 
 describe('listCardsSchema', () => {
@@ -124,6 +128,24 @@ describe('card custom field schemas', () => {
 
   it('rejects votes other than zero or one', () => {
     expect(() => setCardCustomFieldSchema.parse({ card_id: 1, field_id: 2, vote: 2 })).toThrow();
+  });
+});
+
+describe('card co-owner schemas', () => {
+  it('requires a card ID to list co-owners', () => {
+    expect(() => getCardCoOwnersSchema.parse({})).toThrow();
+    expect(getCardCoOwnersSchema.parse({ card_id: 1 })).toEqual({ card_id: 1 });
+  });
+
+  it('requires card and user IDs for individual co-owner operations', () => {
+    for (const schema of [
+      getCardCoOwnerSchema,
+      addCardCoOwnerSchema,
+      removeCardCoOwnerSchema,
+    ]) {
+      expect(() => schema.parse({ card_id: 1 })).toThrow();
+      expect(schema.parse({ card_id: 1, user_id: 2 })).toEqual({ card_id: 1, user_id: 2 });
+    }
   });
 });
 

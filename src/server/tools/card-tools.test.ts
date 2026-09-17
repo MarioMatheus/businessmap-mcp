@@ -209,3 +209,89 @@ describe('CardToolHandler custom field tools', () => {
     });
   });
 });
+
+describe('CardToolHandler co-owner tools', () => {
+  const originalProfile = config.businessMap.toolProfile;
+
+  afterEach(() => {
+    config.businessMap.toolProfile = originalProfile;
+  });
+
+  it('lists and checks co-owners in the full profile', async () => {
+    config.businessMap.toolProfile = 'full';
+    const getCardCoOwners = jest.fn().mockResolvedValue([{ user_id: 7 }]);
+    const checkCardCoOwner = jest.fn().mockResolvedValue(true);
+    const client = { cards: { getCardCoOwners, checkCardCoOwner } } as unknown as BusinessMapClient;
+    const registerTool = jest.fn();
+
+    new CardToolHandler().registerTools({ registerTool } as unknown as McpServer, client, true);
+    const listRegistration = registerTool.mock.calls.find(([name]) => name === 'get_card_co_owners');
+    const checkRegistration = registerTool.mock.calls.find(([name]) => name === 'check_card_co_owner');
+    const listResponse = await listRegistration?.[2]({ card_id: 42 });
+    const checkResponse = await checkRegistration?.[2]({ card_id: 42, user_id: 7 });
+
+    expect(getCardCoOwners).toHaveBeenCalledWith(42);
+    expect(checkCardCoOwner).toHaveBeenCalledWith(42, 7);
+    expect(JSON.parse(listResponse.content[0].text)).toEqual({ coOwners: [{ user_id: 7 }], count: 1 });
+    expect(JSON.parse(checkResponse.content[0].text)).toEqual({
+      card_id: 42,
+      user_id: 7,
+      is_co_owner: true,
+    });
+  });
+
+  it('returns false when the checked user is not a co-owner', async () => {
+    config.businessMap.toolProfile = 'full';
+    const checkCardCoOwner = jest.fn().mockResolvedValue(false);
+    const client = { cards: { checkCardCoOwner } } as unknown as BusinessMapClient;
+    const registerTool = jest.fn();
+
+    new CardToolHandler().registerTools({ registerTool } as unknown as McpServer, client, true);
+    const registration = registerTool.mock.calls.find(([name]) => name === 'check_card_co_owner');
+    const response = await registration?.[2]({ card_id: 42, user_id: 7 });
+
+    expect(JSON.parse(response.content[0].text)).toEqual({
+      card_id: 42,
+      user_id: 7,
+      is_co_owner: false,
+    });
+  });
+
+  it('registers co-owner mutations only when writes are enabled', async () => {
+    config.businessMap.toolProfile = 'full';
+    const addCardCoOwner = jest.fn().mockResolvedValue(undefined);
+    const removeCardCoOwner = jest.fn().mockResolvedValue(undefined);
+    const client = { cards: { addCardCoOwner, removeCardCoOwner } } as unknown as BusinessMapClient;
+    const registerTool = jest.fn();
+
+    new CardToolHandler().registerTools({ registerTool } as unknown as McpServer, client, true);
+    expect(registerTool.mock.calls.some(([name]) => name === 'add_card_co_owner')).toBe(false);
+
+    registerTool.mockClear();
+    new CardToolHandler().registerTools({ registerTool } as unknown as McpServer, client, false);
+    const addRegistration = registerTool.mock.calls.find(([name]) => name === 'add_card_co_owner');
+    const removeRegistration = registerTool.mock.calls.find(([name]) => name === 'remove_card_co_owner');
+    await addRegistration?.[2]({ card_id: 42, user_id: 7 });
+    await removeRegistration?.[2]({ card_id: 42, user_id: 7 });
+
+    expect(addCardCoOwner).toHaveBeenCalledWith(42, 7);
+    expect(removeCardCoOwner).toHaveBeenCalledWith(42, 7);
+  });
+
+  it('omits co-owner tools from the essential profile', () => {
+    config.businessMap.toolProfile = 'essential';
+    const registerTool = jest.fn();
+
+    new CardToolHandler().registerTools(
+      { registerTool } as unknown as McpServer,
+      {} as BusinessMapClient,
+      false
+    );
+
+    const names = registerTool.mock.calls.map(([name]) => name);
+    expect(names).not.toContain('get_card_co_owners');
+    expect(names).not.toContain('check_card_co_owner');
+    expect(names).not.toContain('add_card_co_owner');
+    expect(names).not.toContain('remove_card_co_owner');
+  });
+});

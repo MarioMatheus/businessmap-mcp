@@ -1,4 +1,5 @@
 import type { AxiosInstance } from 'axios';
+import { BusinessMapApiError } from '../businessmap-error.js';
 import type { Card, SetCardCustomFieldParams } from '../../types/index.js';
 import { CardClient } from './card-client.js';
 
@@ -161,5 +162,66 @@ describe('CardClient custom field operations', () => {
       'Cannot update card custom field in read-only mode'
     );
     expect(put).not.toHaveBeenCalled();
+  });
+});
+
+describe('CardClient co-owner operations', () => {
+  it('lists a card co-owners', async () => {
+    const coOwners = [{ user_id: 7 }];
+    const get = jest.fn().mockResolvedValue({ data: { data: coOwners } });
+    const client = createClient(get);
+
+    await expect(client.getCardCoOwners(42)).resolves.toEqual(coOwners);
+    expect(get).toHaveBeenCalledWith('/cards/42/coOwners');
+  });
+
+  it('checks whether a user is a card co-owner from a no-content response', async () => {
+    const get = jest.fn().mockResolvedValue({ status: 204 });
+    const client = createClient(get);
+
+    await expect(client.checkCardCoOwner(42, 7)).resolves.toBe(true);
+    expect(get).toHaveBeenCalledWith('/cards/42/coOwners/7');
+  });
+
+  it('returns false when a user is not a card co-owner', async () => {
+    const get = jest
+      .fn()
+      .mockRejectedValue(new BusinessMapApiError('BusinessMap API Error (404): Not found', { status: 404 }));
+    const client = createClient(get);
+
+    await expect(client.checkCardCoOwner(42, 7)).resolves.toBe(false);
+  });
+
+  it('adds and removes a card co-owner', async () => {
+    const put = jest.fn().mockResolvedValue({ status: 204 });
+    const deleteRequest = jest.fn().mockResolvedValue({ status: 204 });
+    const client = new CardClient();
+    client.initialize({ put, delete: deleteRequest } as unknown as AxiosInstance, {
+      apiUrl: 'https://example.kanbanize.com/api/v2',
+      apiToken: 'token',
+    });
+
+    await expect(client.addCardCoOwner(42, 7)).resolves.toBeUndefined();
+    await expect(client.removeCardCoOwner(42, 7)).resolves.toBeUndefined();
+    expect(put).toHaveBeenCalledWith('/cards/42/coOwners/7');
+    expect(deleteRequest).toHaveBeenCalledWith('/cards/42/coOwners/7');
+  });
+
+  it('rejects co-owner mutations in read-only mode', async () => {
+    const put = jest.fn();
+    const deleteRequest = jest.fn();
+    const client = new CardClient();
+    client.initialize({ put, delete: deleteRequest } as unknown as AxiosInstance, {
+      apiUrl: 'https://example.kanbanize.com/api/v2',
+      apiToken: 'token',
+      readOnlyMode: true,
+    });
+
+    await expect(client.addCardCoOwner(42, 7)).rejects.toThrow(
+      'Cannot add card co-owner in read-only mode'
+    );
+    await expect(client.removeCardCoOwner(42, 7)).rejects.toThrow(
+      'Cannot remove card co-owner in read-only mode'
+    );
   });
 });

@@ -507,6 +507,14 @@ export interface ParentCardPositionResponse {
   };
 }
 
+export interface CardCoOwner {
+  user_id: number;
+}
+
+export interface CardCoOwnersResponse {
+  data: CardCoOwner[];
+}
+
 // Parent Graph Response types
 export interface ParentGraphItem {
   child_card_id: number;
