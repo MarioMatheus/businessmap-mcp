@@ -5,6 +5,7 @@ import {
   CardListResponse,
   CardPage,
   CardCustomField,
+  CardCustomFieldDetails,
   CardCustomFieldsResponse,
   CardCoOwner,
   CardCoOwnersResponse,
@@ -45,6 +46,7 @@ import {
   UpdateCardParams,
   UpdateCommentParams,
   UpdateSubtaskParams,
+  SetCardCustomFieldParams,
 } from '../../types/index.js';
 import { BusinessMapApiError } from '../businessmap-error.js';
 import { BaseClientModuleImpl } from './base-client.js';
@@ -324,6 +326,32 @@ export class CardClient extends BaseClientModuleImpl {
   async getCardCustomFields(cardId: number): Promise<CardCustomField[]> {
     const response = await this.http.get<CardCustomFieldsResponse>(`/cards/${cardId}/customFields`);
     return response.data.data;
+  }
+
+  /**
+   * Get one custom field value from a specific card
+   */
+  async getCardCustomField(cardId: number, fieldId: number): Promise<CardCustomFieldDetails> {
+    const response = await this.http.get<ApiResponse<CardCustomFieldDetails>>(
+      `/cards/${cardId}/customFields/${fieldId}`
+    );
+    return response.data.data;
+  }
+
+  /**
+   * Add or update one custom field value on a specific card
+   */
+  async setCardCustomField(
+    cardId: number,
+    fieldId: number,
+    params: SetCardCustomFieldParams
+  ): Promise<CardCustomFieldDetails | undefined> {
+    this.checkReadOnlyMode('update card custom field');
+    const response = await this.http.put<ApiResponse<CardCustomFieldDetails>>(
+      `/cards/${cardId}/customFields/${fieldId}`,
+      params
+    );
+    return response.data?.data;
   }
 
   /**

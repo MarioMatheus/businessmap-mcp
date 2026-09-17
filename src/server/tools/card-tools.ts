@@ -21,8 +21,9 @@ import {
   getCardChildGraphSchema,
   getCardChildrenSchema,
   getCardCommentSchema,
-  getCardCoOwnerSchema,
-  getCardCoOwnersSchema,
+   getCardCustomFieldSchema,
+   getCardCoOwnerSchema,
+   getCardCoOwnersSchema,
   getCardDetailSchema,
   getCardFlowHistorySchema,
   getCardHistorySchema,
@@ -45,6 +46,7 @@ import {
   removeStickerFromCardSchema,
   removeTagFromCardSchema,
   searchCardsSchema,
+  setCardCustomFieldSchema,
   unblockCardSchema,
   updateCardSchema,
   updateCardSubtaskSchema,
@@ -291,6 +293,16 @@ export class CardToolHandler implements BaseToolHandler {
     });
 
     registerTool(server, {
+      name: 'get_card_custom_field',
+      title: 'Get Card Custom Field',
+      description: 'Get one custom field value from a specific card',
+      schema: getCardCustomFieldSchema,
+      annotations: READ_ONLY,
+      errorContext: 'getting card custom field',
+      handler: ({ card_id, field_id }) => client.cards.getCardCustomField(card_id, field_id),
+    });
+
+    registerTool(server, {
       name: 'get_card_types',
       title: 'Get Card Types',
       description: 'Get all available card types',
@@ -504,6 +516,18 @@ export class CardToolHandler implements BaseToolHandler {
       errorContext: 'updating card',
       successMessage: 'Card updated successfully:',
       handler: (params) => client.cards.updateCard(params),
+    });
+
+    registerTool(server, {
+      name: 'set_card_custom_field',
+      title: 'Set Card Custom Field',
+      description: 'Add or update one custom field value on a specific card',
+      schema: setCardCustomFieldSchema,
+      annotations: WRITE,
+      errorContext: 'setting card custom field',
+      successMessage: 'Card custom field updated successfully:',
+      handler: ({ card_id, field_id, ...params }) =>
+        client.cards.setCardCustomField(card_id, field_id, params),
     });
 
     registerTool(server, {

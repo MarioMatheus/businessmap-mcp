@@ -145,6 +145,71 @@ describe('CardToolHandler compact responses', () => {
   });
 });
 
+describe('CardToolHandler custom field tools', () => {
+  const originalProfile = config.businessMap.toolProfile;
+
+  afterEach(() => {
+    config.businessMap.toolProfile = originalProfile;
+  });
+
+  it('registers and invokes the individual custom field lookup', async () => {
+    config.businessMap.toolProfile = 'full';
+    const getCardCustomField = jest.fn().mockResolvedValue({ field_id: 7, value: 'Example' });
+    const client = { cards: { getCardCustomField } } as unknown as BusinessMapClient;
+    const registerTool = jest.fn();
+
+    new CardToolHandler().registerTools({ registerTool } as unknown as McpServer, client, true);
+    const registration = registerTool.mock.calls.find(([name]) => name === 'get_card_custom_field');
+    const response = await registration?.[2]({ card_id: 42, field_id: 7 });
+
+    expect(getCardCustomField).toHaveBeenCalledWith(42, 7);
+    expect(JSON.parse(response.content[0].text)).toEqual({
+      field_id: 7,
+      value: 'Example',
+    });
+  });
+
+  it('registers the custom field update only when writes are enabled', () => {
+    config.businessMap.toolProfile = 'full';
+    const registerTool = jest.fn();
+    const client = { cards: {} } as unknown as BusinessMapClient;
+
+    new CardToolHandler().registerTools({ registerTool } as unknown as McpServer, client, true);
+    expect(registerTool.mock.calls.some(([name]) => name === 'set_card_custom_field')).toBe(false);
+
+    registerTool.mockClear();
+    new CardToolHandler().registerTools({ registerTool } as unknown as McpServer, client, false);
+    expect(registerTool.mock.calls.some(([name]) => name === 'set_card_custom_field')).toBe(true);
+  });
+
+  it('forwards the complete custom field update payload', async () => {
+    config.businessMap.toolProfile = 'full';
+    const setCardCustomField = jest.fn().mockResolvedValue({ field_id: 7, value: 'Example' });
+    const client = { cards: { setCardCustomField } } as unknown as BusinessMapClient;
+    const registerTool = jest.fn();
+
+    new CardToolHandler().registerTools({ registerTool } as unknown as McpServer, client, false);
+    const registration = registerTool.mock.calls.find(([name]) => name === 'set_card_custom_field');
+    const response = await registration?.[2]({
+      card_id: 42,
+      field_id: 7,
+      value: 'Example',
+      selected_values_to_add_or_update: [{ value_id: 11, position: 0 }],
+      vote: 1,
+    });
+
+    expect(setCardCustomField).toHaveBeenCalledWith(42, 7, {
+      value: 'Example',
+      selected_values_to_add_or_update: [{ value_id: 11, position: 0 }],
+      vote: 1,
+    });
+    expect(JSON.parse(response.content[0].text.slice(response.content[0].text.indexOf('\n') + 1))).toEqual({
+      field_id: 7,
+      value: 'Example',
+    });
+  });
+});
+
 describe('CardToolHandler co-owner tools', () => {
   const originalProfile = config.businessMap.toolProfile;
 
