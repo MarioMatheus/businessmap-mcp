@@ -546,6 +546,25 @@ export const getCardParentSchema = z.object({
   parent_card_id: z.number().describe('The ID of the parent card'),
 });
 
+export const getCardCoOwnersSchema = z.object({
+  card_id: z.number().describe('The ID of the card'),
+});
+
+export const getCardCoOwnerSchema = z.object({
+  card_id: z.number().describe('The ID of the card'),
+  user_id: z.number().describe('The ID of the co-owner user'),
+});
+
+export const addCardCoOwnerSchema = z.object({
+  card_id: z.number().describe('The ID of the card'),
+  user_id: z.number().describe('The ID of the user to add as a co-owner'),
+});
+
+export const removeCardCoOwnerSchema = z.object({
+  card_id: z.number().describe('The ID of the card'),
+  user_id: z.number().describe('The ID of the co-owner user to remove'),
+});
+
 export const addCardParentSchema = z.object({
   card_id: z.number().describe('The ID of the card'),
   parent_card_id: z.number().describe('The ID of the parent card'),
