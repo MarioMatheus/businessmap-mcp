@@ -1,6 +1,6 @@
 import type { AxiosInstance } from 'axios';
 import { BusinessMapApiError } from '../businessmap-error.js';
-import type { Card } from '../../types/index.js';
+import type { Card, SetCardCustomFieldParams } from '../../types/index.js';
 import { CardClient } from './card-client.js';
 
 function createClient(get: jest.Mock): CardClient {
@@ -95,6 +95,73 @@ describe('CardClient expanded card lookup', () => {
       'archived',
       'discarded',
     ]);
+  });
+});
+
+describe('CardClient custom field operations', () => {
+  it('gets one custom field from a card', async () => {
+    const field = { field_id: 7, value: 'Example', display_value: 'Example' };
+    const get = jest.fn().mockResolvedValue({ data: { data: field } });
+    const client = createClient(get);
+
+    await expect(client.getCardCustomField(42, 7)).resolves.toEqual(field);
+    expect(get).toHaveBeenCalledWith('/cards/42/customFields/7');
+  });
+
+  it('updates one custom field with the complete API payload', async () => {
+    const params: SetCardCustomFieldParams = {
+      value: 'Example',
+      selected_values_to_add_or_update: [{ value_id: 11, position: 0 }],
+      selected_value_ids_to_remove: [12],
+      other_value: 'Other',
+      contributor_ids_to_add: [3],
+      contributor_ids_to_remove: [4],
+      files_to_add: [{ file_name: 'file.txt', link: 'https://example.com/file', position: 0 }],
+      files_to_update: [{ id: 20, file_name: 'updated.txt', link: 'https://example.com/updated', position: 0 }],
+      file_ids_to_remove: [21],
+      vote: 1,
+      comment: 'Useful field',
+      selected_cards_to_add_or_update: [{ selected_card_id: 99, position: 0 }],
+      selected_card_ids_to_remove: [100],
+    };
+    const put = jest.fn().mockResolvedValue({ data: { data: { field_id: 7, value: 'Example' } } });
+    const client = new CardClient();
+    client.initialize({ put } as unknown as AxiosInstance, {
+      apiUrl: 'https://example.kanbanize.com/api/v2',
+      apiToken: 'token',
+    });
+
+    await expect(client.setCardCustomField(42, 7, params)).resolves.toEqual({
+      field_id: 7,
+      value: 'Example',
+    });
+    expect(put).toHaveBeenCalledWith('/cards/42/customFields/7', params);
+  });
+
+  it('accepts a successful update without a response body', async () => {
+    const put = jest.fn().mockResolvedValue({ status: 204 });
+    const client = new CardClient();
+    client.initialize({ put } as unknown as AxiosInstance, {
+      apiUrl: 'https://example.kanbanize.com/api/v2',
+      apiToken: 'token',
+    });
+
+    await expect(client.setCardCustomField(42, 7, {})).resolves.toBeUndefined();
+  });
+
+  it('rejects custom field updates in read-only mode', async () => {
+    const put = jest.fn();
+    const client = new CardClient();
+    client.initialize({ put } as unknown as AxiosInstance, {
+      apiUrl: 'https://example.kanbanize.com/api/v2',
+      apiToken: 'token',
+      readOnlyMode: true,
+    });
+
+    await expect(client.setCardCustomField(42, 7, {})).rejects.toThrow(
+      'Cannot update card custom field in read-only mode'
+    );
+    expect(put).not.toHaveBeenCalled();
   });
 });
 

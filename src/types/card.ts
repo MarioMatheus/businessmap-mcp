@@ -94,6 +94,61 @@ export interface CardCustomField {
   display_value: string;
 }
 
+export interface CardCustomFieldSelectedValue {
+  value_id: number;
+  position: number;
+}
+
+export interface CardCustomFieldContributor {
+  user_id: number;
+}
+
+export interface CardCustomFieldFile {
+  id?: number;
+  file_name: string;
+  link: string;
+  position: number;
+}
+
+export interface CardCustomFieldVote {
+  vote: 0 | 1 | null;
+  comment: string | null;
+  user_id: number;
+}
+
+export interface CardCustomFieldSelectedCard {
+  selected_card_id: number;
+  position: number;
+}
+
+export interface SetCardCustomFieldParams {
+  value?: string | null;
+  selected_values_to_add_or_update?: CardCustomFieldSelectedValue[];
+  selected_value_ids_to_remove?: number[];
+  other_value?: string | null;
+  contributor_ids_to_add?: number[];
+  contributor_ids_to_remove?: number[];
+  files_to_add?: CardCustomFieldFile[];
+  files_to_update?: Array<CardCustomFieldFile & { id: number }>;
+  file_ids_to_remove?: number[];
+  vote?: 0 | 1 | null;
+  comment?: string | null;
+  selected_cards_to_add_or_update?: CardCustomFieldSelectedCard[];
+  selected_card_ids_to_remove?: number[];
+}
+
+export type CardCustomFieldDetails = Omit<CardCustomField, 'value' | 'display_value'> & {
+  value?: string | number | null;
+  display_value?: string;
+} &
+  Partial<{
+    values: string[];
+    contributors: CardCustomFieldContributor[];
+    files: CardCustomFieldFile[];
+    votes: CardCustomFieldVote[];
+    selected_cards: CardCustomFieldSelectedCard[];
+  }>;
+
 export interface Sticker {
   id: number;
   card_id: number;
